@@ -1,40 +1,20 @@
-const { Schema, model } = require('mongoose');
-const bcrypt = require('bcrypt');
+const mongoose = require('mongoose');
+const {ticketSchema} = require('./Ticket')
+const {eventSchema} = require('./Event')
 
-const userSchema = new Schema({
-  username: {
-    type: String,
-    required: true,
-    unique: true,
-    trim: true,
-  },
-  email: {
-    type: String,
-    required: true,
-    unique: true,
-    match: [/.+@.+\..+/, 'Must match an email address!'],
-  },
-  password: {
-    type: String,
-    required: true,
-    minlength: 5,
-  },
-  // If your user needs more properties, add them here. Don't forget to add them to the typeDefs.js, resolvers.js and the userSeeds.
+const userSchema = new mongoose.Schema({
+    name: String,
+    email: String,
+    mobile: {
+        type: String,
+        unique: true,
+        dropDups: true,
+        required: true
+    },
+    tickets: [ ticketSchema ],
+    event: [ {type:String} ],
 });
 
-userSchema.pre('save', async function (next) {
-  if (this.isNew || this.isModified('password')) {
-    const saltRounds = 10;
-    this.password = await bcrypt.hash(this.password, saltRounds);
-  }
+const User = mongoose.model('User', userSchema);
 
-  next();
-});
-
-userSchema.methods.isCorrectPassword = async function (password) {
-  return bcrypt.compare(password, this.password);
-};
-
-const User = model('User', userSchema);
-
-module.exports = User;
+module.exports = {User, userSchema};
