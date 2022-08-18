@@ -1,17 +1,17 @@
-const createError = require('http-errors');
-const express = require('express');
-const path = require('path');
-const cors = require('cors');
+var createError = require('http-errors');
+var express = require('express');
+var path = require('path');
+var cors = require('cors');
 const dotenv = require('dotenv');
 dotenv.config();
 
-const indexRouter = require('./routes/index');
-const usersRouter = require('./routes/users');
-const ticketsRouter = require('./routes/tickets');
-const eventsRouter = require('./routes/events');
-const winnerRouter = require('./routes/winners')
+var indexRouter = require('./routes/index');
+var usersRouter = require('./routes/users');
+var ticketsRouter = require('./routes/tickets');
+var eventsRouter = require('./routes/events');
+var winnerRouter = require('./routes/winners')
 
-const app = express();
+var app = express();
 app.use(cors());
 app.use(function(req, res, next) {
     res.header("Access-Control-Allow-Origin", "*");
@@ -53,8 +53,8 @@ app.use(function(err, req, res, next) {
   res.render('error');
 });
 
-app.listen(process.env.PORT || 8080, function(){
-  console.log('Server started at Port 8080:');
+app.listen(process.env.PORT || 3001, function(){
+  console.log('Server started at Port 3001:');
 });
 
 module.exports = app;

@@ -1,70 +1,37 @@
-import React from 'react';
-import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
-import { ApolloClient, ApolloProvider, InMemoryCache, createHttpLink } from '@apollo/client';
-import { setContext } from '@apollo/client/link/context';
+import Tickets from './pages/Tickets';
+import Footer from './pages/Footer';
+import Header from './pages/Header';
+import Winner from './pages/Winner';
+import Events from './pages/Events';
+import EventsTable from './pages/EventsTable';
+import 'bootstrap/dist/css/bootstrap.min.css';
 
-import Container from 'react-bootstrap/Container';
-
-import Home from './pages/Home';
-import Profile from './pages/Profile';
-import NotFound from './pages/Notfound';
-import Login from './pages/Login';
-import Signup from './pages/Signup';
-
-import Header from './components/Header';
-
-const httpLink = createHttpLink({
-  uri: '/graphql',
-});
-
-const authLink = setContext((_, { headers }) => {
-  // get the authentication token from local storage if it exists
-  const token = localStorage.getItem('id_token');
-  // return the headers to the context so httpLink can read them
-  return {
-    headers: {
-      ...headers,
-      authorization: token ? `Bearer ${token}` : '',
-    },
-  };
-});
-
-const client = new ApolloClient({
-  link: authLink.concat(httpLink),
-  cache: new InMemoryCache(),
-});
+import {
+  BrowserRouter as Router,
+  Switch,
+  Route
+} from "react-router-dom";
 
 function App() {
-  return (
-    <ApolloProvider client={client}>
+    return (
+    <div className='wrapper'>
       <Router>
-        <Header/>
-        <Container>
-          <Routes>
-            <Route 
-              path="/" 
-              element={<Home />}
-            />
-            <Route 
-              path="/profile" 
-              element={<Profile/>}
-            />
-            <Route 
-              path="/login" 
-              element={<Login/>}
-            />
-            <Route 
-              path="/signup" 
-              element={<Signup/>}
-            />
-            <Route 
-              path="*"
-              element={<NotFound />}
-            />
-          </Routes>
-        </Container>
+        <Header />
+        <Switch>
+          <Route path="/winners">
+            <Winner />
+          </Route>
+          <Route path="/tickets/:ticketID" component={EventsTable} />
+          <Route path="/tickets">
+            <Tickets />
+          </Route>
+          <Route path="/">
+            <Events />
+          </Route>
+        </Switch>
       </Router>
-    </ApolloProvider>
+      <Footer />
+    </div>
   );
 }
 
