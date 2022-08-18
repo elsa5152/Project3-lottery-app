@@ -1,47 +1,60 @@
+const createError = require('http-errors');
 const express = require('express');
-const { ApolloServer } = require('apollo-server-express');
 const path = require('path');
+const cors = require('cors');
+const dotenv = require('dotenv');
+dotenv.config();
 
-const { typeDefs, resolvers } = require('./schemas');
-const db = require('./config/connection');
-const {authMiddleware} = require('./utils/auth');
+const indexRouter = require('./routes/index');
+const usersRouter = require('./routes/users');
+const ticketsRouter = require('./routes/tickets');
+const eventsRouter = require('./routes/events');
+const winnerRouter = require('./routes/winners')
 
-const PORT = process.env.PORT || 3001;
 const app = express();
-const server = new ApolloServer({
-  typeDefs,
-  resolvers,
-  context: authMiddleware,
-  // These two lines below enable the playground when deployed to heroku. You can remove them if you don't want this functionality
-  introspection: true,
-  playground: true,
+app.use(cors());
+app.use(function(req, res, next) {
+    res.header("Access-Control-Allow-Origin", "*");
+    res.header('Access-Control-Allow-Methods', 'DELETE, PUT, GET, POST');
+    res.header("Access-Control-Allow-Headers", "Origin, X-Requested-With, Content-Type, Accept");
+    next();
 });
 
-app.use(express.urlencoded({ extended: false }));
+const mongooseConnect = require('./config/connection');
+mongooseConnect(app);
+
 app.use(express.json());
+app.use(express.urlencoded({ extended: false }));
+app.use(express.static(path.join(__dirname, 'public')));
 
-if (process.env.NODE_ENV === 'production') {
-  app.use(express.static(path.join(__dirname, '../client/build')));
-}
+app.use('/css', express.static(path.join(__dirname, 'node_modules/bootstrap/dist/css')))
+app.use('/js', express.static(path.join(__dirname, 'node_modules/bootstrap/dist/js')))
+app.use('/js', express.static(path.join(__dirname, 'node_modules/jquery/dist')))
 
-app.get('/', (req, res) => {
-  res.sendFile(path.join(__dirname, '../client/build/index.html'));
+app.use('/', indexRouter);
+app.use('/signin', usersRouter);
+app.use('/tickets', ticketsRouter);
+app.use('/events', eventsRouter);
+app.use('/winners', winnerRouter);
+
+// catch 404 and forward to error handler
+app.use(function(req, res, next) {
+  next(createError(404));
 });
 
+// error handler
+app.use(function(err, req, res, next) {
+  // set locals, only providing error in development
+  res.locals.message = err.message;
+  res.locals.error = req.app.get('env') === 'development' ? err : {};
 
-// Create a new instance of an Apollo server with the GraphQL schema
-const startApolloServer = async (typeDefs, resolvers) => {
-  await server.start();
-  server.applyMiddleware({ app });
-  
-  db.once('open', () => {
-    app.listen(PORT, () => {
-      console.log(`API server running on port ${PORT}!`);
-      console.log(`Use GraphQL at http://localhost:${PORT}${server.graphqlPath}`);
-    })
-  })
-  };
-  
-// Call the async function to start the server
-  startApolloServer(typeDefs, resolvers);
- 
+  // render the error page
+  res.status(err.status || 500);
+  res.render('error');
+});
+
+app.listen(process.env.PORT || 8080, function(){
+  console.log('Server started at Port 8080:');
+});
+
+module.exports = app;
