@@ -10,7 +10,7 @@ async function generateWinner( req, res) {
     console.log(moment().format('LT'));
     Event.find({resultAnnounced: false, date: {$lte: moment().format('L')}}, function(err,result) {
 
-        //console.log(result);
+ //(result);
         const arr=[];
         if(result.length) {result.forEach((event)=> { 
             
